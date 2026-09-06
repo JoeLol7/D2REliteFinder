@@ -10,6 +10,8 @@ from memory.units import (
 
 from memory.process import read_mem
 
+from memory.object_data import load_object_data
+
 from config import (
     PLAYER_TABLE,
     NPC_TABLE,
@@ -26,6 +28,7 @@ class D2RGame:
         self.handle = handle
         self.table = table
         self.pid = pid
+        self.object_data = load_object_data()
 
     # ========================================================
     # Process
@@ -203,6 +206,25 @@ class D2RGame:
             if not path:
                 continue
 
+            txt = unit["txt"]
+
+            obj_data = self.object_data.get(txt)
+
+            if obj_data:
+                unit["name"] = obj_data["name"]
+                unit["class"] = obj_data["class"]
+                unit["subclass"] = obj_data["subclass"]
+                unit["operate_fn"] = obj_data["operate_fn"]
+                unit["populate_fn"] = obj_data["populate_fn"]
+                unit["init_fn"] = obj_data["init_fn"]
+            else:
+                unit["name"] = ""
+                unit["class"] = ""
+                unit["subclass"] = ""
+                unit["operate_fn"] = ""
+                unit["populate_fn"] = ""
+                unit["init_fn"] = ""
+
             data = self._read(
                 path + 0x10,
                 6
@@ -222,10 +244,6 @@ class D2RGame:
                 continue
 
             unit["x"], unit["y"] = position
-
-            unit["type"] = get_object_type(
-                unit["txt"]
-            )
 
             objects.append(unit)
 

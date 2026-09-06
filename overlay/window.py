@@ -246,6 +246,8 @@ class OverlayWindow(QWidget):
             return
 
         painter = QPainter(self)
+        
+        font = QFont()
 
         try:
 
@@ -395,8 +397,6 @@ class OverlayWindow(QWidget):
 
                     continue
 
-                font = QFont()
-
                 font.setPointSize(
                     max(8, int(size / 10))
                 )
@@ -421,26 +421,29 @@ class OverlayWindow(QWidget):
 
             for obj in self.objects:
 
-                type = obj["type"]
+                init_fn = obj["init_fn"]
+                operate_fn = obj["operate_fn"]
 
-                if type == "SUPER_CHEST":
-                    marker = "SC"
-                    color = Qt.green
-                elif type == "CHEST":
-                    marker = "C"
-                    color = Qt.red
-                elif type == "GEM_SHRINE":
-                    marker = "GS"
-                    color = Qt.cyan
-                elif type == "WEAPON_RACK":
-                    marker = "W"
-                    color = Qt.cyan
-                elif type == "ARMOUR_STAND":
-                    marker = "A"
-                    color = Qt.cyan
-                else:
-                    marker = ""#f"O:{obj['txt']}"
-                    color = Qt.white
+                marker = f""
+                color = Qt.white
+                #If not opened
+                if obj["mode"] != 2:
+                    #Sparkly Chest
+                    if init_fn == 57:
+                        marker = "SC"
+                        color = Qt.green
+                    #Chest
+                    elif init_fn == 3:
+                        marker = "C"
+                        color = Qt.white
+                    #Weapon Rack                
+                    elif operate_fn == 20:
+                        marker = "W"
+                        color = Qt.cyan
+                    #Armor Rack
+                    elif operate_fn == 19:
+                        marker = "A"
+                        color = Qt.cyan
                 
                 sx, sy = self.world_to_overlay(
                     obj["x"],
