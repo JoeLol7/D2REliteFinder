@@ -440,7 +440,7 @@ class OverlayWindow(QWidget):
                 color = Qt.white
             
             sx, sy = self.world_to_overlay(
-                obj["x"],q
+                obj["x"],
                 obj["y"],
                 self.player["x"],
                 self.player["y"]
