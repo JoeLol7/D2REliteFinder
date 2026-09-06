@@ -368,13 +368,13 @@ class OverlayWindow(QWidget):
             elif rarity == "MINION":
 
                 marker = "o"
-                size = 150
+                size = 100
                 color = Qt.yellow
 
             elif rarity == "CHAMPION":
 
-                marker = "D"
-                size = 150
+                marker = "o"
+                size = 100
                 color = Qt.blue
 
             elif rarity == "UNIQUE":
@@ -386,7 +386,7 @@ class OverlayWindow(QWidget):
             elif rarity == "SUPER_UNIQUE":
 
                 marker = "*"
-                size = 250
+                size = 300
                 color = Qt.red
 
             else:
