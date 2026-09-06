@@ -247,251 +247,258 @@ class OverlayWindow(QWidget):
 
         painter = QPainter(self)
 
-        painter.setRenderHint(
-            QPainter.Antialiasing
-        )
+        try:
 
-        player_x = self.player["x"]
-        player_y = self.player["y"]
-
-        # --------------------------------------------------
-        # Minimap size / position
-        # --------------------------------------------------
-
-
-        map_cx = self.width() / 2
-        map_cy = self.height() / 2 - 10
-
-        map_left = map_cx - self.map_size / 2
-        map_top = map_cy - self.map_size / 2
-
-        # --------------------------------------------------
-        # Semi-transparent background
-        # --------------------------------------------------
-
-        painter.setPen(
-            Qt.NoPen
-        )
-
-        painter.setBrush(
-            QBrush(
-                Qt.black,
-                Qt.SolidPattern
+            painter.setRenderHint(
+                QPainter.Antialiasing
             )
-        )
 
-        # Don't make the whole thing opaque
-        painter.setOpacity(0.25)
+            player_x = self.player["x"]
+            player_y = self.player["y"]
 
-        #painter.drawRoundedRect(
-        #    map_left,
-        #    map_top,
-        #    self.map_size,
-        #    self.map_size,
-        #    10,
-        #    10
-        #)
+            # --------------------------------------------------
+            # Minimap size / position
+            # --------------------------------------------------
 
-        painter.setOpacity(0.5)
 
-        # --------------------------------------------------
-        # Draw player trail
-        # --------------------------------------------------
+            map_cx = self.width() / 2
+            map_cy = self.height() / 2 - 10
 
-        if len(self.history) > 1:
+            map_left = map_cx - self.map_size / 2
+            map_top = map_cy - self.map_size / 2
 
-            pen = QPen(Qt.white)
+            # --------------------------------------------------
+            # Semi-transparent background
+            # --------------------------------------------------
 
-            pen.setWidth(2)
+            painter.setPen(
+                Qt.NoPen
+            )
 
-            painter.setPen(pen)
+            painter.setBrush(
+                QBrush(
+                    Qt.black,
+                    Qt.SolidPattern
+                )
+            )
 
-            previous = None
+            # Don't make the whole thing opaque
+            painter.setOpacity(0.25)
 
-            for hx, hy in self.history:
+            #painter.drawRoundedRect(
+            #    map_left,
+            #    map_top,
+            #    self.map_size,
+            #    self.map_size,
+            #    10,
+            #    10
+            #)
+
+            painter.setOpacity(0.5)
+
+            # --------------------------------------------------
+            # Draw player trail
+            # --------------------------------------------------
+
+            if len(self.history) > 1:
+
+                pen = QPen(Qt.white)
+
+                pen.setWidth(2)
+
+                painter.setPen(pen)
+
+                previous = None
+
+                for hx, hy in self.history:
+
+                    sx, sy = self.world_to_overlay(
+                        hx,
+                        hy,
+                        player_x,
+                        player_y
+                    )
+
+                    if previous is not None:
+                        if abs(sx - previous[0]) < 100 and abs(sy - previous[1]) < 100:
+                            painter.drawLine(
+                                int(previous[0]),
+                                int(previous[1]),
+                                int(sx),
+                                int(sy)
+                            )
+
+                    previous = (
+                        sx,
+                        sy
+                    )
+
+            painter.setOpacity(1.0)
+
+            # --------------------------------------------------
+            # Draw monsters
+            # --------------------------------------------------
+
+            for monster in self.monsters:
+
+                x = monster["x"]
+                y = monster["y"]
 
                 sx, sy = self.world_to_overlay(
-                    hx,
-                    hy,
+                    x,
+                    y,
                     player_x,
                     player_y
                 )
 
-                if previous is not None:
-                    if abs(sx - previous[0]) < 100 and abs(sy - previous[1]) < 100:
-                        painter.drawLine(
-                            int(previous[0]),
-                            int(previous[1]),
-                            int(sx),
-                            int(sy)
-                        )
+                # Ignore monsters outside minimap
+                if not (
+                    map_left <= sx <= map_left + self.map_size
+                    and
+                    map_top <= sy <= map_top + self.map_size
+                ):
+                    continue
 
-                previous = (
-                    sx,
-                    sy
+                rarity = monster["rarity"]
+
+                if rarity == "NORMAL":
+
+                    marker = "o"
+                    size = 100
+                    color = Qt.white
+
+                elif rarity == "MINION":
+
+                    marker = "o"
+                    size = 100
+                    color = Qt.yellow
+
+                elif rarity == "CHAMPION":
+
+                    marker = "o"
+                    size = 100
+                    color = Qt.blue
+
+                elif rarity == "UNIQUE":
+
+                    marker = "*"
+                    size = 200
+                    color = Qt.yellow
+
+                elif rarity == "SUPER_UNIQUE":
+
+                    marker = "*"
+                    size = 300
+                    color = Qt.red
+
+                else:
+
+                    continue
+
+                font = QFont()
+
+                font.setPointSize(
+                    max(8, int(size / 10))
                 )
 
-        painter.setOpacity(1.0)
+                font.setBold(True)
 
-        # --------------------------------------------------
-        # Draw monsters
-        # --------------------------------------------------
+                painter.setFont(font)
 
-        for monster in self.monsters:
+                painter.setPen(
+                    QPen(color)
+                )
 
-            x = monster["x"]
-            y = monster["y"]
+                painter.drawText(
+                    int(sx - 6),
+                    int(sy + 6),
+                    marker
+                )
 
-            sx, sy = self.world_to_overlay(
-                x,
-                y,
-                player_x,
-                player_y
-            )
+            # --------------------------------------------------
+            # Objects
+            # --------------------------------------------------
 
-            # Ignore monsters outside minimap
-            if not (
-                map_left <= sx <= map_left + self.map_size
-                and
-                map_top <= sy <= map_top + self.map_size
-            ):
-                continue
+            for obj in self.objects:
 
-            rarity = monster["rarity"]
+                type = obj["type"]
 
-            if rarity == "NORMAL":
+                if type == "SUPER_CHEST":
+                    marker = "SC"
+                    color = Qt.green
+                elif type == "CHEST":
+                    marker = "C"
+                    color = Qt.red
+                elif type == "GEM_SHRINE":
+                    marker = "GS"
+                    color = Qt.cyan
+                else:
 
-                marker = "o"
-                size = 100
-                color = Qt.white
+                    marker = ""#f"O:{obj['txt']}"
+                    color = Qt.white
+                
+                sx, sy = self.world_to_overlay(
+                    obj["x"],
+                    obj["y"],
+                    self.player["x"],
+                    self.player["y"]
+                )
 
-            elif rarity == "MINION":
+                painter.setPen(
+                    QPen(color)
+                )
 
-                marker = "o"
-                size = 100
-                color = Qt.yellow
+                font.setPointSize(
+                    max(8, int(100 / 10))
+                )
 
-            elif rarity == "CHAMPION":
+                painter.drawText(
+                    int(sx - 5),
+                    int(sy + 5),
+                    marker
+                )
 
-                marker = "o"
-                size = 100
-                color = Qt.blue
-
-            elif rarity == "UNIQUE":
-
-                marker = "*"
-                size = 200
-                color = Qt.yellow
-
-            elif rarity == "SUPER_UNIQUE":
-
-                marker = "*"
-                size = 300
-                color = Qt.red
-
-            else:
-
-                continue
-
-            font = QFont()
-
-            font.setPointSize(
-                max(8, int(size / 10))
-            )
-
-            font.setBold(True)
-
-            painter.setFont(font)
+            # --------------------------------------------------
+            # Player
+            # --------------------------i------------------------
 
             painter.setPen(
-                QPen(color)
+                QPen(Qt.white)
             )
 
-            painter.drawText(
-                int(sx - 6),
-                int(sy + 6),
-                marker
+            painter.setBrush(
+                QBrush(Qt.white)
             )
 
-        # --------------------------------------------------
-        # Objects
-        # --------------------------------------------------
+            painter.drawEllipse(
+                int(map_cx - 5),
+                int(map_cy - 5),
+                10,
+                10
+            )
 
-        font.setPointSize(
-            max(8, int(100 / 10))
-        )
+            # --------------------------------------------------
+            # Border
+            # --------------------------------------------------
 
-        for obj in self.objects:
-
-            type = obj["type"]
-
-            if type == "SUPER_CHEST":
-                marker = "SC"
-                color = Qt.green
-            elif type == "CHEST":
-                marker = "C"
-                color = Qt.red
-            elif type == "GEM_SHRINE":
-                marker = "GS"
-                color = Qt.cyan
-            else:
-
-                marker = ""#f"O:{obj['txt']}"
-                color = Qt.white
-            
-            sx, sy = self.world_to_overlay(
-                obj["x"],
-                obj["y"],
-                self.player["x"],
-                self.player["y"]
+            painter.setBrush(
+                Qt.NoBrush
             )
 
             painter.setPen(
-                QPen(color)
+                QPen(Qt.white, 1)
             )
 
-            painter.drawText(
-                int(sx - 5),
-                int(sy + 5),
-                marker
-            )
+            #painter.drawRoundedRect(
+            #    map_left,
+            #    map_top,
+            #    self.map_size,
+            #    self.map_size,
+            #    10,
+            #    10
+            #)
 
-        # --------------------------------------------------
-        # Player
-        # --------------------------------------------------
+        except Exception as e:
 
-        painter.setPen(
-            QPen(Qt.white)
-        )
-
-        painter.setBrush(
-            QBrush(Qt.white)
-        )
-
-        painter.drawEllipse(
-            int(map_cx - 5),
-            int(map_cy - 5),
-            10,
-            10
-        )
-
-        # --------------------------------------------------
-        # Border
-        # --------------------------------------------------
-
-        painter.setBrush(
-            Qt.NoBrush
-        )
-
-        painter.setPen(
-            QPen(Qt.white, 1)
-        )
-
-        #painter.drawRoundedRect(
-        #    map_left,
-        #    map_top,
-        #    self.map_size,
-        #    self.map_size,
-        #    10,
-        #    10
-        #)
+            print(f"Error in paintEvent: {e}")
+            painter.end()
