@@ -101,11 +101,15 @@ def get_monster_rarity(flags):
         return "NORMAL"
 
 def get_object_type(txt):
-    if txt in [397, 406]:
+    if txt in [181,183,397, 406]:
         return "SUPER_CHEST"
     elif txt in [126,433,501,502,504,510]:
         return "CHEST"
     elif txt in [124, 495]:
         return "SHRINE"
+    elif txt in [107]:
+        return "WEAPON_RACK"
+    elif txt in [104]:
+        return "ARMOUR_STAND"
     else:
         return "UNKNOWN"

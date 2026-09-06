@@ -432,8 +432,13 @@ class OverlayWindow(QWidget):
                 elif type == "GEM_SHRINE":
                     marker = "GS"
                     color = Qt.cyan
+                elif type == "WEAPON_RACK":
+                    marker = "W"
+                    color = Qt.cyan
+                elif type == "ARMOUR_STAND":
+                    marker = "A"
+                    color = Qt.cyan
                 else:
-
                     marker = ""#f"O:{obj['txt']}"
                     color = Qt.white
                 
