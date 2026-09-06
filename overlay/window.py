@@ -417,6 +417,10 @@ class OverlayWindow(QWidget):
         # Objects
         # --------------------------------------------------
 
+        font.setPointSize(
+            max(8, int(100 / 10))
+        )
+
         for obj in self.objects:
 
             type = obj["type"]
