@@ -436,11 +436,11 @@ class OverlayWindow(QWidget):
                 color = Qt.cyan
             else:
 
-                marker = f"O:{obj['txt']}"
+                marker = ""#f"O:{obj['txt']}"
                 color = Qt.white
             
             sx, sy = self.world_to_overlay(
-                obj["x"],
+                obj["x"],q
                 obj["y"],
                 self.player["x"],
                 self.player["y"]
