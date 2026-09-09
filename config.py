@@ -19,6 +19,7 @@ DISP_OFFSET = 7
 PLAYER_TABLE  = 0x000
 NPC_TABLE     = 0x400
 OBJECT_TABLE = 0x800
+ITEM_TABLE = 0x1000
 
 BUCKET_COUNT = 128
 
@@ -40,6 +41,17 @@ OFF_STATS  = 0x88
 
 PATH_Y = 0x02
 PATH_X = 0x06
+
+ITEM_Y = 0x10
+ITEM_X = 0x14
+
+# ============================================================
+# ITEM DATA
+# ============================================================
+
+ITEM_DATA_SIZE = 0x56
+
+ITEM_DATA_QUALITY = 0x00
 
 # ============================================================
 # NPC
@@ -79,4 +91,30 @@ RARITY_STYLE = {
     "CHAMPION":     {"marker": "D", "size": 100, "color": "blue"},
     "UNIQUE":       {"marker": "*", "size": 150, "color": "gold"},
     "SUPER_UNIQUE": {"marker": "*", "size": 220, "color": "red"},
+}
+
+SUPER_CHEST_IDS = {
+    387,
+    389,
+    390,
+    391,
+    455,
+    580,
+    581
+}
+
+RUNES = {
+    645: "PUL",
+    646: "UM",
+    647: "MAL",
+    648: "IST",
+    649: "GUL",
+    650: "VEX",
+    651: "OHM",
+    652: "LO",
+    653: "SUR",
+    654: "BER",
+    655: "JAH",
+    656: "CHAM",
+    657: "ZOD",
 }

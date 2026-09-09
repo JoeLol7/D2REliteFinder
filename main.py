@@ -101,6 +101,7 @@ def main():
 
         monsters = game.get_monsters()
         objects = game.get_objects()
+        items = game.get_items()
 
         visible_monsters = []
 
@@ -124,7 +125,8 @@ def main():
             player,
             visible_monsters,
             history,
-            objects
+            objects,
+            items
         )
 
     # --------------------------------------------------
@@ -156,8 +158,6 @@ def main():
 if __name__ == "__main__":
 
     while True:
-        main()
-
         try:
             main()
 

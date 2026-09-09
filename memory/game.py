@@ -2,6 +2,8 @@ import psutil
 
 
 from memory.units import (
+    get_item_position,
+    get_item_quality,
     read_unit,
     get_position,
     get_monster_rarity,
@@ -18,6 +20,7 @@ from config import (
     BUCKET_COUNT,
     NPC_FLAGS,
     OBJECT_TABLE,
+    ITEM_TABLE
 )
 
 
@@ -248,6 +251,71 @@ class D2RGame:
             objects.append(unit)
 
         return objects
+
+    def get_items(self):
+        items = []
+        item_table = self.table + ITEM_TABLE
+
+        for bucket in range(BUCKET_COUNT):
+            ptr = self._read_pointer(
+                item_table + bucket * 8
+            )
+            
+            if not ptr:
+                continue
+                    
+            while ptr:
+
+                unit = read_unit(
+                    self.handle,
+                    ptr
+                )
+
+                if unit is None:
+                    break
+
+                next_ptr = self._read_pointer(ptr + 0x158)
+
+                if unit["mode"] not in [3,5]:
+                    ptr = next_ptr
+                    continue
+
+                if unit["type"] != 4:
+                    ptr = next_ptr
+                    continue
+
+                path = unit["pPath"]
+
+                if not path:
+                    ptr = next_ptr
+                    continue
+
+                position = get_item_position(
+                    self.handle,
+                    unit
+                )
+
+                if position is None:
+                    ptr = next_ptr
+                    continue
+
+                unit["x"], unit["y"] = position
+                unit["quality"] = get_item_quality(
+                    self.handle,
+                    unit
+                )
+
+                #print(
+                #    f"Item: id={unit['id']} mode={unit['mode']} txt={unit['txt']} pos=({unit['x']}, {unit['y']}) quality={unit['quality']}"
+                #)
+
+                items.append(unit)
+
+                next_ptr = self._read_pointer(ptr + 0x158)
+
+                ptr = next_ptr
+        #print(f"Found {len(items)} items.")
+        return items
 
     # ========================================================
     # Memory helpers

@@ -2,7 +2,7 @@
 
 from memory.process import read_mem
 import struct
-from config import OFF_TYPE, OFF_TXT, OFF_ID, OFF_MODE, OFF_PDATA, OFF_PATH, OFF_STATS, PATH_Y, PATH_X, NPC_FLAGS, NPC_TABLE
+from config import ITEM_DATA_QUALITY, ITEM_DATA_SIZE, ITEM_Y, ITEM_X, OFF_TYPE, OFF_TXT, OFF_ID, OFF_MODE, OFF_PDATA, OFF_PATH, OFF_STATS, PATH_Y, PATH_X, NPC_FLAGS, NPC_TABLE
 
 # ============================================================
 # UnitAny
@@ -81,6 +81,63 @@ def get_position(handle, unit):
         "<H",
         data,
         PATH_X
+    )[0]
+
+    if x == 0 and y == 0:
+        return None
+
+    return x, y
+
+def get_item_quality(handle, unit):
+
+    pData = unit["pData"]
+
+    if not pData:
+        return None
+
+    data = read_mem(
+        handle,
+        pData,
+        ITEM_DATA_SIZE
+    )
+
+    if data is None:
+        return None
+
+    quality = struct.unpack_from(
+        "<L",
+        data,
+        ITEM_DATA_QUALITY
+    )[0]
+
+    return quality
+
+def get_item_position(handle, unit):
+
+    path = unit["pPath"]
+
+    if not path:
+        return None
+
+    data = read_mem(
+        handle,
+        path,
+        0x20
+    )
+
+    if data is None:
+        return None
+
+    y = struct.unpack_from(
+        "<H",
+        data,
+        ITEM_Y
+    )[0]
+
+    x = struct.unpack_from(
+        "<H",
+        data,
+        ITEM_X
     )[0]
 
     if x == 0 and y == 0:

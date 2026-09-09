@@ -6,6 +6,7 @@ from ctypes import wintypes
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QPen, QBrush, QFont
 from PySide6.QtWidgets import QWidget
+from config import RUNES, SUPER_CHEST_IDS
 
 
 user32 = ctypes.windll.user32
@@ -45,6 +46,7 @@ class OverlayWindow(QWidget):
         self.player = None
         self.monsters = []
         self.objects = []
+        self.items = []
 
         self.history = []
 
@@ -187,13 +189,15 @@ class OverlayWindow(QWidget):
         player,
         monsters,
         history,
-        objects
+        objects,
+        items
     ):
 
         self.player = player
         self.monsters = monsters
         self.history = history
         self.objects = objects
+        self.items = items
 
         self.update()
 
@@ -432,6 +436,10 @@ class OverlayWindow(QWidget):
                     if init_fn == 57:
                         marker = "SC"
                         color = Qt.green
+                    #Super Chest
+                    elif obj["txt"] in SUPER_CHEST_IDS:
+                        marker = "SC"
+                        color = Qt.red
                     #Chest
                     elif init_fn == 3:
                         marker = "C"
@@ -458,6 +466,47 @@ class OverlayWindow(QWidget):
 
                 font.setPointSize(
                     max(8, int(100 / 10))
+                )
+
+                painter.drawText(
+                    int(sx - 5),
+                    int(sy + 5),
+                    marker
+                )
+
+            for item in self.items:
+                marker = "I"
+                color = Qt.white
+                size = 100
+                if item["quality"] == 5:
+                    marker = "I"
+                    color = Qt.green
+                    size = 300
+                if item["quality"] == 7:
+                    marker = "I"
+                    color = Qt.yellow
+                    size = 300
+                if item["quality"] == 2:
+                    if item["txt"] in RUNES:
+                        marker = RUNES[item["txt"]]
+                        color = Qt.red
+                        size = 300
+
+                #print(f"Item: id={item['id']} pos=({item['x']}, {item['y']}) txt={item['txt']} quality={item['quality']}")
+                
+                sx, sy = self.world_to_overlay(
+                    item["x"],
+                    item["y"],
+                    self.player["x"],
+                    self.player["y"]
+                )
+
+                painter.setPen(
+                    QPen(color)
+                )
+
+                font.setPointSize(
+                    max(8, int(size / 10))
                 )
 
                 painter.drawText(
