@@ -1,5 +1,6 @@
 import ctypes
 import math
+import time
 
 from ctypes import wintypes
 
@@ -42,7 +43,8 @@ class OverlayWindow(QWidget):
         super().__init__()
 
         self.pid = pid
-
+        self.player_xp = None
+        self.xp_drops = []
         self.player = None
         self.monsters = []
         self.objects = []
@@ -192,6 +194,37 @@ class OverlayWindow(QWidget):
         objects,
         items
     ):
+
+        # --------------------------------------------------
+        # XP tracking
+        # --------------------------------------------------
+
+        now = time.monotonic()
+
+        if player is not None and "xp" in player:
+
+            current_xp = player["xp"]
+
+            if self.player_xp is not None:
+
+                xp_gain = current_xp - self.player_xp
+
+                if xp_gain > 0:
+
+                    self.xp_drops.append({
+                        "amount": xp_gain,
+                        "time": now
+                    })
+
+            self.player_xp = current_xp
+
+        # Remove old XP notifications
+
+        self.xp_drops = [
+            drop
+            for drop in self.xp_drops
+            if now - drop["time"] < 5.0
+        ]
 
         self.player = player
         self.monsters = monsters
@@ -479,18 +512,22 @@ class OverlayWindow(QWidget):
                 color = Qt.white
                 size = 100
                 if item["quality"] == 5:
-                    marker = "I"
+                    marker = "SET"
                     color = Qt.green
                     size = 300
-                if item["quality"] == 7:
-                    marker = "I"
+                elif item["quality"] == 7:
+                    marker = "UNQ"
                     color = Qt.yellow
                     size = 300
-                if item["quality"] == 2:
+                elif item["quality"] == 2:
                     if item["txt"] in RUNES:
                         marker = RUNES[item["txt"]]
                         color = Qt.red
                         size = 300
+                    else:
+                        continue
+                else:
+                    continue
 
                 #print(f"Item: id={item['id']} pos=({item['x']}, {item['y']}) txt={item['txt']} quality={item['quality']}")
                 
@@ -514,6 +551,46 @@ class OverlayWindow(QWidget):
                     int(sy + 5),
                     marker
                 )
+
+            # --------------------------------------------------
+            # XP drops
+            # --------------------------------------------------
+
+            now = time.monotonic()
+
+            font.setPointSize(12)
+            font.setBold(True)
+
+            painter.setFont(font)
+
+            for index, drop in enumerate(self.xp_drops):
+
+                age = now - drop["time"]
+
+                # Fade out during final second
+                opacity = 1.0
+
+                if age > 4.0:
+                    opacity = 5.0 - age
+
+                painter.setOpacity(opacity)
+
+                text = f"+{drop['amount']:,} XP"
+
+                # Float upwards as it ages
+                y = 100 + index * 25 - int(age * 15)
+
+                painter.setPen(
+                    QPen(Qt.yellow)
+                )
+
+                painter.drawText(
+                    int(self.width() / 2 - 40),
+                    y,
+                    text
+                )
+
+            painter.setOpacity(1.0)
 
             # --------------------------------------------------
             # Player

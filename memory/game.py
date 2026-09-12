@@ -89,6 +89,27 @@ class D2RGame:
 
             unit["x"], unit["y"] = position
 
+            stats = unit["pStats"]
+
+            if not stats:
+                return None
+
+            stat_array = self._read_pointer(stats + 0x30)
+            count = self._read_uint16(stats + 0x38)
+
+            if not stat_array or count is None:
+                return None
+
+            for i in range(count):
+
+                stat_ptr = stat_array + i * 8
+
+                code = self._read_uint16(stat_ptr + 0x02)
+                value = self._read_uint32(stat_ptr + 0x04)
+
+                if code == 0x0D:
+                    unit["xp"] = value
+
             return unit
 
         return None
@@ -115,69 +136,61 @@ class D2RGame:
             if not ptr:
                 continue
 
-            unit = read_unit(
-                self.handle,
-                ptr
-            )
-
-            #print(
-            #    f"bucket={bucket:3d} "
-            #    f"ptr=0x{ptr:X} "
-            #    f"id={unit['id']} "
-            #    f"txt={unit['txt']} "
-            #    f"mode={unit['mode']}"
-            #)
-            
-            next_ptr = self._read_pointer(ptr + 0x150)
-
-            if next_ptr:
-                print(
-                    f"*** NEXT POINTER: bucket={bucket} "
-                    f"id={unit['id']} "
-                    f"next=0x{next_ptr:X}"
+            while ptr:
+                
+                next_ptr = self._read_pointer(ptr + 0x158)
+                
+                unit = read_unit(
+                    self.handle,
+                    ptr
                 )
 
-            if unit is None:
-                continue
+                if unit is None:
+                    ptr = next_ptr
+                    continue
 
-            # Monster/NPC unit type
-            if unit["type"] != 1:
-                continue
+                # Monster/NPC unit type
+                if unit["type"] != 1:
+                    ptr = next_ptr
+                    continue
 
-            position = get_position(
-                self.handle,
-                unit
-            )
-
-            if position is None:
-                continue
-
-            unit["x"], unit["y"] = position
-
-            # ------------------------------------------------
-            # NPC flags / rarity
-            # ------------------------------------------------
-
-            flags = 0
-
-            if unit["pData"]:
-
-                data = self._read(
-                    unit["pData"] + NPC_FLAGS,
-                    1
+                position = get_position(
+                    self.handle,
+                    unit
                 )
 
-                if data is not None:
+                if position is None:
+                    ptr = next_ptr
+                    continue
 
-                    flags = data[0]
+                unit["x"], unit["y"] = position
 
-            unit["flags"] = flags
+                # ------------------------------------------------
+                # NPC flags / rarity
+                # ------------------------------------------------
 
-            unit["rarity"] = get_monster_rarity(
-                flags
-            )
+                flags = 0
 
-            monsters.append(unit)
+                if unit["pData"]:
+
+                    data = self._read(
+                        unit["pData"] + NPC_FLAGS,
+                        1
+                    )
+
+                    if data is not None:
+
+                        flags = data[0]
+
+                unit["flags"] = flags
+
+                unit["rarity"] = get_monster_rarity(
+                    flags
+                )
+
+                monsters.append(unit)
+                
+                ptr = next_ptr
 
         return monsters
 
@@ -334,6 +347,37 @@ class D2RGame:
         data = self._read(
             address,
             8
+        )
+
+        if data is None:
+            return None
+
+        return int.from_bytes(
+            data,
+            byteorder="little"
+        )
+
+    def _read_uint16(self, address):
+
+        data = self._read(
+            address,
+            2
+        )
+
+        if data is None:
+            return None
+
+        return int.from_bytes(
+            data,
+            byteorder="little"
+        )
+
+
+    def _read_uint32(self, address):
+
+        data = self._read(
+            address,
+            4
         )
 
         if data is None:
