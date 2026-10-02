@@ -12,7 +12,7 @@ from memory.game import D2RGame
 from overlay.window import OverlayWindow
 
 
-def main():
+def main(app):
 
     print("Connecting to D2R...")
 
@@ -47,8 +47,6 @@ def main():
     # --------------------------------------------------
     # Qt application
     # --------------------------------------------------
-
-    app = QApplication(sys.argv)
 
     overlay = OverlayWindow(pid)
 
@@ -148,18 +146,23 @@ def main():
     # Run Qt
     # --------------------------------------------------
 
-    exit_code = app.exec()
+    app.exec()
+
+    timer.stop()
+    overlay.close()
+    overlay.deleteLater()
 
     handle.close()
-
-    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
 
+    
+    app = QApplication(sys.argv)
+
     while True:
-        try:
-            main()
+        try:    
+            main(app)
 
         except Exception as e:
 
