@@ -4,6 +4,7 @@ import psutil
 from memory.units import (
     get_item_position,
     get_item_quality,
+    get_item_unique_or_set_id,
     read_unit,
     get_position,
     get_monster_rarity,
@@ -289,7 +290,7 @@ class D2RGame:
 
                 next_ptr = self._read_pointer(ptr + 0x158)
 
-                if unit["mode"] not in [3,5]:
+                if unit["mode"] not in [3]:
                     ptr = next_ptr
                     continue
 
@@ -314,6 +315,11 @@ class D2RGame:
 
                 unit["x"], unit["y"] = position
                 unit["quality"] = get_item_quality(
+                    self.handle,
+                    unit
+                )
+
+                unit["unique_or_set_id"] = get_item_unique_or_set_id(
                     self.handle,
                     unit
                 )

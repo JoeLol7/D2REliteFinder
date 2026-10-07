@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QPen, QBrush, QFont
 from PySide6.QtWidgets import QWidget
 from config import RUNES, SUPER_CHEST_IDS
+from item_data import get_item_name
 
 
 user32 = ctypes.windll.user32
@@ -49,6 +50,8 @@ class OverlayWindow(QWidget):
         self.monsters = []
         self.objects = []
         self.items = []
+        self.item_notifications = []
+        self.seen_item_ids = set()
 
         self.history = []
 
@@ -232,7 +235,42 @@ class OverlayWindow(QWidget):
         self.objects = objects
         self.items = items
 
+        for item in items:
+
+            if item["quality"] not in (5, 7):
+                continue
+
+            item_id = item["id"]
+
+            if item_id in self.seen_item_ids:
+                continue
+
+            self.seen_item_ids.add(item_id)
+
+            self.handle_new_item(item)
+
+        now = time.monotonic()
+
+        self.item_notifications = [
+            notification
+            for notification in self.item_notifications
+            if now - notification["time"] < 5.0
+        ]
+
         self.update()
+
+    def handle_new_item(self, item):
+        if item["quality"] not in (5, 7):
+            return
+
+        # lookup name
+        name = get_item_name(item)
+
+        self.item_notifications.append({
+            "name": name,
+            "quality": item["quality"],
+            "time": time.monotonic()
+        })
 
     # ======================================================
     # World -> overlay coordinates
@@ -508,6 +546,8 @@ class OverlayWindow(QWidget):
                 )
 
             for item in self.items:
+
+
                 marker = "I"
                 color = Qt.white
                 size = 100
@@ -517,7 +557,8 @@ class OverlayWindow(QWidget):
                     size = 300
                 elif item["quality"] == 7:
                     marker = "UNQ"
-                    color = Qt.yellow
+                    color 
+                    h= Qt.yellow
                     size = 300
                 elif item["quality"] == 2:
                     if item["txt"] in RUNES:
@@ -530,7 +571,12 @@ class OverlayWindow(QWidget):
                     continue
 
                 #print(f"Item: id={item['id']} pos=({item['x']}, {item['y']}) txt={item['txt']} quality={item['quality']}")
-                
+                #print(
+                #    f"Item: id={item['id']} "
+                #    f"txt={item['txt']} "
+                #    f"quality={item['quality']} "
+                #    f"unique/set={item['unique_or_set_id']}"
+                #)
                 sx, sy = self.world_to_overlay(
                     item["x"],
                     item["y"],
@@ -591,6 +637,80 @@ class OverlayWindow(QWidget):
                 )
 
             painter.setOpacity(1.0)
+
+            # --------------------------------------------------
+            # Item notifications
+            # --------------------------------------------------
+
+            # now = time.monotonic()
+
+            # font.setBold(True)
+            # font.setPointSize(18)
+
+            # painter.setFont(font)
+
+            # for index, notification in enumerate(
+            #     self.item_notifications
+            # ):
+
+            #     age = now - notification["time"]
+
+            #     # Fade out during final second
+            #     opacity = 1.0
+
+            #     if age > 4.0:
+            #         opacity = 5.0 - age
+
+            #     painter.setOpacity(opacity)
+
+            #     quality = notification["quality"]
+            #     name = notification["name"]
+
+            #     if quality == 7:
+            #         label = "UNIQUE"
+            #         color = Qt.yellow
+
+            #     elif quality == 5:
+            #         label = "SET"
+            #         color = Qt.green
+
+            #     else:
+            #         continue
+
+            #     # Notification position
+            #     x = self.width() / 2
+
+            #     y = (
+            #         150
+            #         + index * 65
+            #         - int(age * 10)
+            #     )
+
+            #     # Draw type
+            #     painter.setPen(
+            #         QPen(color)
+            #     )
+
+            #     painter.drawText(
+            #         int(x - 100),
+            #         int(y),
+            #         label
+            #     )
+
+            #     # Draw item name
+            #     font.setPointSize(22)
+            #     painter.setFont(font)
+
+            #     painter.drawText(
+            #         int(x - 200),
+            #         int(y + 28),
+            #         name or "Unknown Item"
+            #     )
+
+            #     # Reset font
+            #     font.setPointSize(18)
+
+            # painter.setOpacity(1.0)
 
             # --------------------------------------------------
             # Player

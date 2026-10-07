@@ -2,7 +2,7 @@
 
 from memory.process import read_mem
 import struct
-from config import ITEM_DATA_QUALITY, ITEM_DATA_SIZE, ITEM_Y, ITEM_X, OFF_TYPE, OFF_TXT, OFF_ID, OFF_MODE, OFF_PDATA, OFF_PATH, OFF_STATS, PATH_Y, PATH_X, NPC_FLAGS, NPC_TABLE
+from config import ITEM_DATA_QUALITY, ITEM_DATA_SIZE, ITEM_DATA_UNIQUE_OR_SET_ID, ITEM_Y, ITEM_X, OFF_TYPE, OFF_TXT, OFF_ID, OFF_MODE, OFF_PDATA, OFF_PATH, OFF_STATS, PATH_Y, PATH_X, NPC_FLAGS, NPC_TABLE
 
 # ============================================================
 # UnitAny
@@ -111,6 +111,30 @@ def get_item_quality(handle, unit):
     )[0]
 
     return quality
+
+def get_item_unique_or_set_id(handle, unit):
+
+    pData = unit["pData"]
+
+    if not pData:
+        return None
+
+    data = read_mem(
+        handle,
+        pData,
+        ITEM_DATA_SIZE
+    )
+
+    if data is None:
+        return None
+
+    unique_or_set_id = struct.unpack_from(
+        "<L",
+        data,
+        ITEM_DATA_UNIQUE_OR_SET_ID
+    )[0]
+
+    return unique_or_set_id
 
 def get_item_position(handle, unit):
 

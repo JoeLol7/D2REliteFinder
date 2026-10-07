@@ -52,6 +52,7 @@ ITEM_X = 0x14
 ITEM_DATA_SIZE = 0x56
 
 ITEM_DATA_QUALITY = 0x00
+ITEM_DATA_UNIQUE_OR_SET_ID = 0x34
 
 # ============================================================
 # NPC

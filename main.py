@@ -10,6 +10,7 @@ from memory.scanner import find_unit_table
 from memory.game import D2RGame
 
 from overlay.window import OverlayWindow
+from item_data import initialise_item_data
 
 
 def main(app):
@@ -157,7 +158,7 @@ def main(app):
 
 if __name__ == "__main__":
 
-    
+    initialise_item_data()
     app = QApplication(sys.argv)
 
     while True:
