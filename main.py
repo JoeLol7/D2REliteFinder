@@ -1,11 +1,12 @@
 import sys
+import time
 
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 
 from config import UPDATE_TIME
 
-from memory.process import get_module_base, open_d2r
+from memory.process import close_d2r, get_module_base, open_d2r
 from memory.scanner import find_unit_table
 from memory.game import D2RGame
 
@@ -24,6 +25,15 @@ def main(app):
         return
 
     print(f"D2R PID: {pid}")
+
+    try:
+        run(app, pid, handle)
+
+    finally:
+        close_d2r(handle)
+
+
+def run(app, pid, handle):
 
     base, module_size = get_module_base(pid)
 
@@ -153,8 +163,6 @@ def main(app):
     overlay.close()
     overlay.deleteLater()
 
-    handle.close()
-
 
 if __name__ == "__main__":
 
@@ -168,4 +176,6 @@ if __name__ == "__main__":
         except Exception as e:
 
             print(f"Error: {e}")
-            print("Restarting...")
+            print("Restarting in 5 seconds...")
+
+            time.sleep(5)

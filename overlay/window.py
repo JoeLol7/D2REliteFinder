@@ -539,6 +539,8 @@ class OverlayWindow(QWidget):
                     max(8, int(100 / 10))
                 )
 
+                painter.setFont(font)
+
                 painter.drawText(
                     int(sx - 5),
                     int(sy + 5),
@@ -557,8 +559,7 @@ class OverlayWindow(QWidget):
                     size = 300
                 elif item["quality"] == 7:
                     marker = "UNQ"
-                    color 
-                    h= Qt.yellow
+                    color = Qt.yellow
                     size = 300
                 elif item["quality"] == 2:
                     if item["txt"] in RUNES:
@@ -591,6 +592,8 @@ class OverlayWindow(QWidget):
                 font.setPointSize(
                     max(8, int(size / 10))
                 )
+
+                painter.setFont(font)
 
                 painter.drawText(
                     int(sx - 5),

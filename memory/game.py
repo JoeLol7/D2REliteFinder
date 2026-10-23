@@ -204,65 +204,63 @@ class D2RGame:
                 object_table + bucket * 8
             )
 
-            if not ptr:
-                continue
+            while ptr:
 
-            unit = read_unit(
-                self.handle,
-                ptr
-            )
+                next_ptr = self._read_pointer(ptr + 0x158)
 
-            if unit is None:
-                continue
+                unit = read_unit(
+                    self.handle,
+                    ptr
+                )
 
-            if unit["type"] != 2:
-                continue
+                if unit is None:
+                    ptr = next_ptr
+                    continue
 
-            path = unit["pPath"]
+                if unit["type"] != 2:
+                    ptr = next_ptr
+                    continue
 
-            if not path:
-                continue
+                path = unit["pPath"]
 
-            txt = unit["txt"]
+                if not path:
+                    ptr = next_ptr
+                    continue
 
-            obj_data = self.object_data.get(txt)
+                txt = unit["txt"]
 
-            if obj_data:
-                unit["name"] = obj_data["name"]
-                unit["class"] = obj_data["class"]
-                unit["subclass"] = obj_data["subclass"]
-                unit["operate_fn"] = obj_data["operate_fn"]
-                unit["populate_fn"] = obj_data["populate_fn"]
-                unit["init_fn"] = obj_data["init_fn"]
-            else:
-                unit["name"] = ""
-                unit["class"] = ""
-                unit["subclass"] = ""
-                unit["operate_fn"] = ""
-                unit["populate_fn"] = ""
-                unit["init_fn"] = ""
+                obj_data = self.object_data.get(txt)
 
-            data = self._read(
-                path + 0x10,
-                6
-            )
+                if obj_data:
+                    unit["name"] = obj_data["name"]
+                    unit["class"] = obj_data["class"]
+                    unit["subclass"] = obj_data["subclass"]
+                    unit["operate_fn"] = obj_data["operate_fn"]
+                    unit["populate_fn"] = obj_data["populate_fn"]
+                    unit["init_fn"] = obj_data["init_fn"]
+                else:
+                    unit["name"] = ""
+                    unit["class"] = ""
+                    unit["subclass"] = ""
+                    unit["operate_fn"] = ""
+                    unit["populate_fn"] = ""
+                    unit["init_fn"] = ""
 
-            if data is None:
-                continue
+                data = self._read(
+                    path + 0x10,
+                    6
+                )
 
-            y = int.from_bytes(data[0:2], "little")
-            x = int.from_bytes(data[4:6], "little")
+                if data is None:
+                    ptr = next_ptr
+                    continue
 
-            position = x, y
-            unit["x"] = x
-            unit["y"] = y
+                unit["y"] = int.from_bytes(data[0:2], "little")
+                unit["x"] = int.from_bytes(data[4:6], "little")
 
-            if position is None:
-                continue
+                objects.append(unit)
 
-            unit["x"], unit["y"] = position
-
-            objects.append(unit)
+                ptr = next_ptr
 
         return objects
 

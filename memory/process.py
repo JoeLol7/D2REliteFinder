@@ -63,6 +63,12 @@ def open_d2r():
         time.sleep(1)
 
 
+def close_d2r(handle):
+
+    if handle:
+        kernel32.CloseHandle(handle)
+
+
 # ============================================================
 # Module information
 # ============================================================
